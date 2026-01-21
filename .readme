@@ -1,307 +1,120 @@
-# 🔍 System Monitor & App Usage Tracker
+# System Monitor & App Usage Tracker
 
-A comprehensive system monitoring application that tracks processes, detects suspicious activities, and sends SMS alerts for age-restricted apps, VPN usage, and incognito browsing.
+A real-time monitoring application that tracks app usage and sends SMS alerts for suspicious activities like VPN usage, incognito browsing, and more.
 
-## Features
+## Setup Instructions
 
-✅ **Real-time System Monitoring** - Automatically tracks running processes
-✅ **Anomaly Detection** - Identifies age-restricted apps, VPN, proxy, and incognito mode
-✅ **SMS Alerts** - Sends notifications via Twilio for suspicious activities
-✅ **Manual Logging** - Add custom app usage entries
-✅ **Date Range Filtering** - View logs within specific time periods
-✅ **Statistics Dashboard** - View comprehensive usage statistics
-✅ **MongoDB Storage** - All logs stored in MongoDB database
+### 1. Install Dependencies
 
-## Tech Stack
-
-- **Backend**: Node.js + Express
-- **Database**: MongoDB
-- **SMS Service**: Twilio (optional)
-- **Frontend**: Vanilla JavaScript + HTML/CSS
-
-## Prerequisites
-
-Before you begin, ensure you have:
-
-- Node.js (v14 or higher) installed
-- MongoDB installed locally OR MongoDB Atlas account
-- Twilio account (optional, for SMS alerts)
-
-## Installation
-
-### 1. Clone or Download the Project
-
-```bash
-git clone <your-repo-url>
-cd childguard-system-monitor
-```
-
-### 2. Install Dependencies
+First, navigate to your project folder and install the required packages:
 
 ```bash
 npm install
 ```
 
-### 3. Set Up Environment Variables
+This will install:
+- `express` - Web server framework
+- `cors` - Cross-origin resource sharing
+- `twilio` - SMS alert service
 
-Create a `.env` file in the root directory:
+### 2. Start the Server
 
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and configure:
-
-```env
-# Server
-PORT=5000
-
-# MongoDB - Choose one:
-# Local MongoDB:
-MONGODB_URI=mongodb://localhost:27017/childguard
-
-# OR MongoDB Atlas (cloud):
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/childguard
-
-# Twilio (Optional - for SMS alerts)
-TWILIO_ACCOUNT_SID=your_sid
-TWILIO_AUTH_TOKEN=your_token
-TWILIO_PHONE=+1234567890
-ALERT_PHONE=+1234567890
-```
-
-### 4. Set Up MongoDB
-
-**Option A: Local MongoDB**
-```bash
-# Start MongoDB service
-mongod
-```
-
-**Option B: MongoDB Atlas (Cloud)**
-1. Go to https://www.mongodb.com/cloud/atlas
-2. Create a free cluster
-3. Get connection string
-4. Add to `.env` file
-
-### 5. Set Up Twilio (Optional)
-
-1. Sign up at https://www.twilio.com
-2. Get Account SID and Auth Token
-3. Get a Twilio phone number
-4. Add credentials to `.env` file
-
-**Note:** SMS alerts will work without Twilio, but alerts won't be sent.
-
-## Running the Application
-
-### Development Mode (with auto-restart)
-
-```bash
-npm run dev
-```
-
-### Production Mode
+Run the server:
 
 ```bash
 npm start
 ```
 
-The server will start at `http://localhost:5000`
+You should see: `🚀 Server running at http://localhost:5000`
 
-## Project Structure
+### 3. Open the Frontend
+
+Simply open `index.html` in your browser by:
+- Double-clicking the file, OR
+- Right-click → Open with → Your browser, OR
+- Drag and drop into your browser
+
+## About Those Console Errors
+
+The errors you're seeing in the console are **completely normal** and won't affect your app:
 
 ```
-childguard-system-monitor/
-├── server.js           # Main backend server
-├── logs.html          # Frontend dashboard
-├── home.html          # Home page
-├── api.html           # API page
-├── mini.css           # Styles
-├── package.json       # Dependencies
-├── .env               # Environment variables (create this)
-├── .env.example       # Environment template
-└── README.md          # Documentation
+Failed to load resource: the server responded with a status of 404 (Not Found)
+Connecting to 'http://localhost:5000/.well-known/appspecific/com.chrome.devtools.json'
+```
+
+**Why this happens:**
+- Chrome DevTools automatically tries to connect to a debugging endpoint
+- This is a Chrome feature for debugging extensions/apps
+- Your server doesn't have this endpoint (and doesn't need it!)
+- The app works perfectly fine despite these messages
+
+**How to hide them:**
+1. Click on "Default levels" dropdown in the Console
+2. Uncheck "Errors" temporarily
+3. Or just ignore them - they don't affect functionality
+
+## Features
+
+✅ **Real-time Monitoring** - Track all application usage
+✅ **SMS Alerts** - Get notified of suspicious activities via Twilio
+✅ **Anomaly Detection** - Detects VPN, incognito mode, excessive usage
+✅ **Manual Logging** - Add entries manually
+✅ **Date Filtering** - Filter logs by date range
+✅ **Statistics Dashboard** - View usage statistics at a glance
+
+## Configuration
+
+Edit these values in `server.js`:
+
+```javascript
+const TWILIO_ACCOUNT_SID = 'your_account_sid';
+const TWILIO_AUTH_TOKEN = 'your_auth_token';
+const TWILIO_PHONE_NUMBER = '+1234567890';
+const REGISTERED_PHONE_NUMBER = '+0987654321';
 ```
 
 ## API Endpoints
 
-### Monitoring
-- `GET /monitoring-status` - Check monitoring status
-- `POST /monitoring/start` - Start monitoring
-- `POST /monitoring/stop` - Stop monitoring
-
-### Logs
-- `POST /log-usage` - Add manual log entry
-- `GET /get-logs?startTime=&stopTime=` - Get filtered logs
+- `POST /log-usage` - Add a new log entry
 - `GET /all-logs` - Get all logs
+- `GET /get-logs?startTime=X&stopTime=Y` - Get filtered logs
 - `DELETE /clear-logs` - Clear all logs
-
-### Statistics
+- `POST /test-alert` - Send a test SMS
 - `GET /stats` - Get usage statistics
-
-### Alerts
-- `POST /test-alert` - Send test SMS alert
-
-### Health
-- `GET /health` - Server health check
-
-## Deployment
-
-### Deploy to Vercel
-
-1. Install Vercel CLI:
-```bash
-npm install -g vercel
-```
-
-2. Create `vercel.json`:
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "server.js"
-    }
-  ],
-  "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "TWILIO_ACCOUNT_SID": "@twilio_sid",
-    "TWILIO_AUTH_TOKEN": "@twilio_token",
-    "TWILIO_PHONE": "@twilio_phone",
-    "ALERT_PHONE": "@alert_phone"
-  }
-}
-```
-
-3. Add environment variables in Vercel dashboard:
-   - Go to Project Settings → Environment Variables
-   - Add all variables from `.env`
-
-4. Deploy:
-```bash
-vercel --prod
-```
-
-### Deploy to Heroku
-
-1. Install Heroku CLI and login:
-```bash
-heroku login
-```
-
-2. Create Heroku app:
-```bash
-heroku create your-app-name
-```
-
-3. Add MongoDB Atlas add-on:
-```bash
-heroku addons:create mongodb-atlas:free
-```
-
-4. Set environment variables:
-```bash
-heroku config:set TWILIO_ACCOUNT_SID=your_sid
-heroku config:set TWILIO_AUTH_TOKEN=your_token
-# ... add other variables
-```
-
-5. Deploy:
-```bash
-git push heroku main
-```
-
-## Configuration
-
-### Monitored Anomalies
-
-The system detects these anomalies:
-
-**Age-Restricted Apps:**
-- Discord, Snapchat, TikTok, Instagram, Facebook
-- Twitter, Reddit, Twitch, YouTube, Netflix
-
-**VPN Apps:**
-- NordVPN, ExpressVPN, TunnelBear, ProtonVPN
-- Hotspot Shield, Windscribe
-
-**Proxy Apps:**
-- Tor, Psiphon, Proxy
-
-**Incognito Keywords:**
-- Incognito, Private, InPrivate
-
-### Customizing Detected Apps
-
-Edit `server.js` and modify these arrays:
-
-```javascript
-const AGE_RESTRICTED_APPS = [ /* your apps */ ];
-const VPN_APPS = [ /* your vpn apps */ ];
-const PROXY_APPS = [ /* your proxy apps */ ];
-```
-
-## Monitoring Behavior
-
-- Monitoring runs every **30 seconds**
-- Only logs processes with detected anomalies
-- Avoids duplicate logs within 5-minute windows
-- Automatically starts on server launch
+- `GET /monitoring-status` - Check monitoring status
+- `GET /health` - Health check
 
 ## Troubleshooting
 
-### MongoDB Connection Issues
+### Server won't start
+- Make sure port 5000 is not in use
+- Check that all dependencies are installed: `npm install`
 
-```bash
-# Check if MongoDB is running
-mongo --version
-mongod --version
+### Frontend can't connect to server
+- Verify server is running on http://localhost:5000
+- Check browser console for CORS errors
+- Make sure you're not using HTTPS for the HTML file
 
-# Start MongoDB service
-sudo systemctl start mongod  # Linux
-brew services start mongodb-community  # macOS
+### SMS alerts not working
+- Verify Twilio credentials are correct
+- Check that phone numbers include country codes
+- Test with the "Test SMS Alert" button
+
+## Security Note
+
+⚠️ **Important:** Your Twilio credentials are currently hardcoded in the server file. For production:
+1. Use environment variables
+2. Never commit credentials to Git
+3. Add `.env` file to `.gitignore`
+
+Example with environment variables:
+```javascript
+require('dotenv').config();
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 ```
-
-### Port Already in Use
-
-Change port in `.env`:
-```env
-PORT=3000
-```
-
-### Twilio SMS Not Sending
-
-1. Verify credentials in `.env`
-2. Check Twilio account balance
-3. Verify phone numbers are verified in Twilio
-
-## Security Notes
-
-⚠️ **Important Security Considerations:**
-
-1. Never commit `.env` file to version control
-2. Use environment variables for sensitive data
-3. Enable MongoDB authentication in production
-4. Use HTTPS in production
-5. Implement rate limiting for API endpoints
-6. Validate and sanitize all user inputs
 
 ## License
 
 ISC
-
-## Support
-
-For issues and questions, please open an issue on GitHub.
-
----
-
-Made with ❤️ for child safety and parental control
