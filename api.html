@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kids AI Creator - Images & Stories</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '🎨';
+      position: absolute;
+      font-size: 100px;
+      opacity: 0.1;
+      top: -20px;
+      left: 50px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .header::after {
+      content: '✨';
+      position: absolute;
+      font-size: 80px;
+      opacity: 0.1;
+      bottom: -10px;
+      right: 80px;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .header h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .header p {
+      font-size: 18px;
+      opacity: 0.95;
+    }
+
+    .content {
+      padding: 40px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 3px solid #f0f0f0;
+    }
+
+    .tab {
+      padding: 15px 30px;
+      background: none;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #666;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    .tab.active {
+      color: #FF6B9D;
+      border-bottom-color: #FF6B9D;
+    }
+
+    .tab:hover {
+      color: #FF6B9D;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .section {
+      background: linear-gradient(135deg, #FFF5F7 0%, #FFF0F5 100%);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      border: 3px solid #FFE4E9;
+    }
+
+    .section h3 {
+      color: #FF6B9D;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 15px;
+      border: 3px solid #FFE4E9;
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #FF6B9D;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .btn {
+      padding: 15px 40px;
+      border: none;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result-container {
+      margin-top: 30px;
+      padding: 30px;
+      background: white;
+      border-radius: 15px;
+      border: 3px solid #FFE4E9;
+      display: none;
+    }
+
+    .result-container.show {
+      display: block;
+      animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-container h3 {
+      color: #FF6B9D;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .content-result {
+      background: #FFF5F7;
+      padding: 25px;
+      border-radius: 10px;
+      border-left: 5px solid #FF6B9D;
+      font-size: 18px;
+      line-height: 1.8;
+      color: #333;
+      white-space: pre-wrap;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      display: none;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .spinner {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #FF6B9D;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: #FF6B9D;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .example-chip {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid #FFE4E9;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      font-weight: bold;
+      color: #666;
+    }
+
+    .example-chip:hover {
+      background: #FF6B9D;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(255, 107, 157, 0.3);
+    }
+
+    .download-btn {
+      margin-top: 20px;
+      margin-right: 10px;
+      background: linear-gradient(135deg, #6BCB77 0%, #4D96A9 100%);
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(107, 203, 119, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 32px;
+      }
+      .tabs {
+        flex-direction: column;
+      }
+      .examples {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎨 Kids AI Creator</h1>
+      <p>Create amazing images and stories for children!</p>
+    </div>
+
+    <div class="content">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('image')">🖼️ Generate Images</button>
+        <button class="tab" onclick="switchTab('story')">📚 Create Stories</button>
+        <button class="tab" onclick="switchTab('both')">✨ Both Together</button>
+      </div>
+
+      <!-- Image Generation Tab -->
+      <div id="imageTab" class="tab-content active">
+        <div class="section">
+          <h3>🎨 Generate Vector Image</h3>
+          
+          <div class="form-group">
+            <label>What do you want to create?</label>
+            <input type="text" id="imagePrompt" placeholder="E.g., A friendly dragon playing with toys">
+          </div>
+
+          <div class="form-group">
+            <label>Image Style</label>
+            <select id="imageStyle">
+              <option value="cartoon">Cartoon Style</option>
+              <option value="cute">Cute & Kawaii</option>
+              <option value="colorful">Colorful & Vibrant</option>
+              <option value="simple">Simple Vector</option>
+              <option value="storybook">Storybook Illustration</option>
+            </select>
+          </div>
+
+          <div class="examples">
+            <div class="example-chip" onclick="setImagePrompt('A cute unicorn with rainbow mane')">🦄 Unicorn</div>
+            <div class="example-chip" onclick="setImagePrompt('A friendly robot playing soccer')">🤖 Robot</div>
+            <div class="example-chip" onclick="setImagePrompt('A magical castle in the clouds')">🏰 Castle</div>
+            <div class="example-chip" onclick="setImagePrompt('A happy dinosaur eating ice cream')">🦕 Dinosaur</div>
+          </div>
+
+          <button class="btn btn-primary" onclick="generateImage()" id="generateImageBtn">
+            Generate Image Description ✨
+          </button>
+
+          <div class="loading" id="imageLoading">
+            <div class="spinner"></div>
+            <div class="loading-text">Creating your magical image... 🎨</div>
+          </div>
+
+          <div class="result-container" id="imageResult">
+            <h3>Your Image Description! 🎉</h3>
+            <div class="content-result" id="imageDisplay"></div>
+            <button class="download-btn" onclick="downloadImage()">Download Description 💾</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Story Generation Tab -->
+      <div id="storyTab" class="tab-content">
+        <div class="section">
+          <h3>📚 Create a Story</h3>
+          
+          <div class="form-group">
+            <label>Story Topic</label>
+            <input type="text" id="storyTopic" placeholder="E.g., A brave little mouse on an adventure">
+          </div>
+
+          <div class="form-group">
+            <label>Story Type</label>
+            <select id="storyType">
+              <option value="adventure">Adventure Story</option>
+              <option value="bedtime">Bedtime Story</option>
+              <option value="educational">Educational Story</option>
+              <option value="funny">Funny Story</option>
+              <option value="moral">Moral Story</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Age Group</label>
+            <select id="ageGroup">
+              <option value="3-5">3-5 years</option>
+              <option value="6-8">6-8 years</option>
+              <option value="9-12">9-12 years</option>
+            </select>
+          </div>
+
+          <div class="examples">
+            <div class="example-chip" onclick="setStoryTopic('A little elephant who learns to fly')">🐘 Flying Elephant</div>
+            <div class="example-chip" onclick="setStoryTopic('Two friends who discover a secret garden')">🌸 Secret Garden</div>
+            <div class="example-chip" onclick="setStoryTopic('A magical paintbrush that brings drawings to life')">🖌️ Magic Brush</div>
+            <div class="example-chip" onclick="setStoryTopic('A superhero cat who saves the city')">🦸 Hero Cat</div>
+          </div>
+
+          <button class="btn btn-primary" onclick="generateStory()" id="generateStoryBtn">
+            Create Story 📖
+          </button>
+
+          <div class="loading" id="storyLoading">
+            <div class="spinner"></div>
+            <div class="loading-text">Writing your amazing story... ✍️</div>
+          </div>
+
+          <div class="result-container" id="storyResult">
+            <h3>Your Story! 📖</h3>
+            <div class="content-result" id="storyDisplay"></div>
+            <button class="download-btn" onclick="downloadStory()">Download Story 💾</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Both Together Tab -->
+      <div id="bothTab" class="tab-content">
+        <div class="section">
+          <h3>✨ Create Image & Story Together</h3>
+          
+          <div class="form-group">
+            <label>What's your idea?</label>
+            <textarea id="bothPrompt" placeholder="E.g., A story about a brave knight and a friendly dragon who become best friends"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Age Group</label>
+            <select id="bothAgeGroup">
+              <option value="3-5">3-5 years</option>
+              <option value="6-8">6-8 years</option>
+              <option value="9-12">9-12 years</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="generateBoth()" id="generateBothBtn">
+            Create Both ✨
+          </button>
+
+          <div class="loading" id="bothLoading">
+            <div class="spinner"></div>
+            <div class="loading-text">Creating your story and image... 🎨📖</div>
+          </div>
+
+          <div class="result-container" id="bothResult">
+            <h3>Your Story & Image! 🎉</h3>
+            <div class="content-result" id="bothImageDisplay" style="margin-bottom: 20px;"></div>
+            <div class="content-result" id="bothStoryDisplay"></div>
+            <div style="margin-top: 20px;">
+              <button class="download-btn" onclick="downloadBothImage()">Download Image Description 💾</button>
+              <button class="download-btn" onclick="downloadBothStory()">Download Story 💾</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const HF_API_KEY = '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';
+    const HF_API_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2';
+    const CORS_PROXY = 'https://corsproxy.io/?';
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.getElementById(tabName + 'Tab').classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function setImagePrompt(prompt) {
+      document.getElementById('imagePrompt').value = prompt;
+    }
+
+    function setStoryTopic(topic) {
+      document.getElementById('storyTopic').value = topic;
+    }
+
+    async function callHuggingFace(prompt, maxTokens = 500) {
+      const response = await fetch(CORS_PROXY + encodeURIComponent(HF_API_URL), {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${HF_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: maxTokens,
+            temperature: 0.8,
+            top_p: 0.9,
+            do_sample: true,
+            return_full_text: false
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (data.estimated_time) {
+        throw new Error(`Model loading. Wait ${Math.ceil(data.estimated_time)}s and retry.`);
+      }
+
+      return data[0].generated_text.trim();
+    }
+
+    async function generateImage() {
+      const prompt = document.getElementById('imagePrompt').value;
+      const style = document.getElementById('imageStyle').value;
+
+      if (!prompt) {
+        alert('Please describe what you want to create!');
+        return;
+      }
+
+      document.getElementById('imageLoading').classList.add('show');
+      document.getElementById('imageResult').classList.remove('show');
+      document.getElementById('generateImageBtn').disabled = true;
+
+      try {
+        const fullPrompt = `Describe a detailed ${style} vector illustration for children: ${prompt}. Include vivid colors, characters, mood, and visual elements. Make it exciting and child-friendly.`;
+        
+        const description = await callHuggingFace(fullPrompt, 400);
+        
+        document.getElementById('imageDisplay').innerHTML = `
+          <strong>🎨 Image Description:</strong><br><br>
+          ${description}
+          <br><br>
+          <small style="color: #999;">💡 Use this description with DALL-E, Stable Diffusion, or Midjourney to create the actual image!</small>
+        `;
+        
+        document.getElementById('imageResult').classList.add('show');
+      } catch (error) {
+        alert('Error: ' + error.message + '\n\nMake sure you are running on localhost (python -m http.server 8000)');
+        console.error('Error:', error);
+      } finally {
+        document.getElementById('imageLoading').classList.remove('show');
+        document.getElementById('generateImageBtn').disabled = false;
+      }
+    }
+
+    async function generateStory() {
+      const topic = document.getElementById('storyTopic').value;
+      const type = document.getElementById('storyType').value;
+      const age = document.getElementById('ageGroup').value;
+
+      if (!topic) {
+        alert('Please enter a story topic!');
+        return;
+      }
+
+      document.getElementById('storyLoading').classList.add('show');
+      document.getElementById('storyResult').classList.remove('show');
+      document.getElementById('generateStoryBtn').disabled = true;
+
+      try {
+        const prompt = `Write a ${type} for children aged ${age} about: ${topic}. Make it fun, engaging, age-appropriate with simple language. Include dialogue. Around 300-400 words.`;
+        
+        const story = await callHuggingFace(prompt, 600);
+        
+        document.getElementById('storyDisplay').textContent = story;
+        document.getElementById('storyResult').classList.add('show');
+      } catch (error) {
+        alert('Error: ' + error.message + '\n\nMake sure you are running on localhost (python -m http.server 8000)');
+        console.error('Error:', error);
+      } finally {
+        document.getElementById('storyLoading').classList.remove('show');
+        document.getElementById('generateStoryBtn').disabled = false;
+      }
+    }
+
+    async function generateBoth() {
+      const prompt = document.getElementById('bothPrompt').value;
+      const age = document.getElementById('bothAgeGroup').value;
+
+      if (!prompt) {
+        alert('Please describe your idea!');
+        return;
+      }
+
+      document.getElementById('bothLoading').classList.add('show');
+      document.getElementById('bothResult').classList.remove('show');
+      document.getElementById('generateBothBtn').disabled = true;
+
+      try {
+        const storyPrompt = `Write a children's story for ages ${age}: ${prompt}. Make it engaging, fun, age-appropriate. Around 300-400 words.`;
+        const story = await callHuggingFace(storyPrompt, 600);
+
+        const imagePrompt = `Describe a detailed, colorful illustration for children: ${prompt}. Include vivid colors, characters, scene, and mood.`;
+        const imageDesc = await callHuggingFace(imagePrompt, 400);
+
+        document.getElementById('bothImageDisplay').innerHTML = `<strong>🎨 Image Description:</strong><br><br>${imageDesc}`;
+        document.getElementById('bothStoryDisplay').innerHTML = `<strong>📖 Story:</strong><br><br>${story}`;
+        document.getElementById('bothResult').classList.add('show');
+      } catch (error) {
+        alert('Error: ' + error.message + '\n\nMake sure you are running on localhost');
+        console.error('Error:', error);
+      } finally {
+        document.getElementById('bothLoading').classList.remove('show');
+        document.getElementById('generateBothBtn').disabled = false;
+      }
+    }
+
+    function downloadStory() {
+      const story = document.getElementById('storyDisplay').textContent;
+      const blob = new Blob([story], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'kids-story.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadImage() {
+      const content = document.getElementById('imageDisplay').textContent;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'image-description.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadBothImage() {
+      const content = document.getElementById('bothImageDisplay').textContent;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'image-description.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadBothStory() {
+      const story = document.getElementById('bothStoryDisplay').textContent;
+      const blob = new Blob([story], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'kids-story.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

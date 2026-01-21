@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>System Monitor & App Usage Logs</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .monitoring-status {
+      background: #28a745;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .monitoring-status.inactive {
+      background: #dc3545;
+    }
+
+    .pulse {
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-card.danger {
+      background: linear-gradient(135deg, #f85032 0%, #e73827 100%);
+    }
+
+    .stat-card.warning {
+      background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+    }
+
+    .stat-card h3 {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-card .number {
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    .section {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .section h3 {
+      margin-bottom: 20px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .filter-group input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .filter-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #218838;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 13px;
+    }
+
+    th {
+      background: #f8f9fa;
+      color: #333;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .type-process {
+      background: #17a2b8;
+      color: white;
+    }
+
+    .type-network {
+      background: #6f42c1;
+      color: white;
+    }
+
+    .type-manual {
+      background: #28a745;
+      color: white;
+    }
+
+    .anomaly-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .anomaly-none {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .anomaly-warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .anomaly-danger {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      display: none;
+      z-index: 1000;
+      max-width: 350px;
+    }
+
+    .toast.show {
+      display: block;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .toast.success {
+      border-left: 4px solid #28a745;
+    }
+
+    .toast.error {
+      border-left: 4px solid #dc3545;
+    }
+
+    @media (max-width: 768px) {
+      .filter-row {
+        flex-direction: column;
+      }
+
+      .filter-group {
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      th, td {
+        padding: 8px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔍 System Monitor & App Usage Tracker</h1>
+      <p>Real-time monitoring of processes, network connections, and suspicious activities</p>
+    </div>
+
+    <div id="monitoringStatus" class="monitoring-status">
+      <div class="pulse"></div>
+      <span>System Monitoring Active</span>
+    </div>
+
+    <div class="content">
+      <!-- Statistics -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <h3>Total Logs</h3>
+          <div class="number" id="totalLogs">0</div>
+        </div>
+        <div class="stat-card danger">
+          <h3>Age Restricted</h3>
+          <div class="number" id="ageRestricted">0</div>
+        </div>
+        <div class="stat-card danger">
+          <h3>VPN Usage</h3>
+          <div class="number" id="vpnUsage">0</div>
+        </div>
+        <div class="stat-card danger">
+          <h3>Incognito Mode</h3>
+          <div class="number" id="incognitoMode">0</div>
+        </div>
+        <div class="stat-card warning">
+          <h3>Proxy Usage</h3>
+          <div class="number" id="proxyUsage">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Active Processes</h3>
+          <div class="number" id="activeProcesses">0</div>
+        </div>
+      </div>
+
+      <!-- Manual Entry -->
+      <div class="section">
+        <h3>➕ Add Manual Log Entry</h3>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>App Name</label>
+            <input type="text" id="newAppName" placeholder="e.g., Chrome, YouTube" />
+          </div>
+          <div class="filter-group">
+            <label>Start Time</label>
+            <input type="datetime-local" id="newStartTime" />
+          </div>
+          <div class="filter-group">
+            <label>Stop Time</label>
+            <input type="datetime-local" id="newStopTime" />
+          </div>
+          <button class="btn btn-primary" onclick="addNewLog()">Add Log</button>
+        </div>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="section">
+        <h3>🔍 Filter Logs by Date Range</h3>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Start Time</label>
+            <input type="datetime-local" id="startTime" />
+          </div>
+          <div class="filter-group">
+            <label>Stop Time</label>
+            <input type="datetime-local" id="stopTime" />
+          </div>
+          <button class="btn btn-primary" onclick="fetchFilteredLogs()">Filter Logs</button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button class="btn btn-success" onclick="fetchAllLogs()">Show All Logs</button>
+        <button class="btn btn-secondary" onclick="loadStats()">Refresh Stats</button>
+        <button class="btn btn-secondary" onclick="testAlert()">Test SMS Alert</button>
+        <button class="btn btn-danger" onclick="clearLogs()">Clear All Logs</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>App/Process Name</th>
+              <th>Time Detected</th>
+              <th>Anomaly</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody">
+            <tr>
+              <td colspan="4" class="empty-state">
+                <div>
+                  <h3>Loading system logs...</h3>
+                  <p>System monitoring is active and tracking all processes</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">
+    <div id="toastMessage"></div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:5000';
+    let autoRefreshInterval;
+
+    // Initialize
+    window.onload = () => {
+      loadStats();
+      fetchAllLogs();
+      setDefaultTimes();
+      startAutoRefresh();
+    };
+
+    function setDefaultTimes() {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      document.getElementById('startTime').value = formatDateTimeLocal(yesterday);
+      document.getElementById('stopTime').value = formatDateTimeLocal(tomorrow);
+    }
+
+    function formatDateTimeLocal(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      
+      toast.className = `toast ${type} show`;
+      toastMessage.textContent = message;
+      
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 3000);
+    }
+
+    function startAutoRefresh() {
+      autoRefreshInterval = setInterval(() => {
+        loadStats();
+        fetchAllLogs();
+      }, 5000); // Refresh every 5 seconds
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_URL}/stats`);
+        const stats = await res.json();
+        
+        document.getElementById('totalLogs').textContent = stats.totalLogs;
+        document.getElementById('ageRestricted').textContent = stats.ageRestricted || 0;
+        document.getElementById('vpnUsage').textContent = stats.vpnUsage;
+        document.getElementById('incognitoMode').textContent = stats.incognitoMode || 0;
+        document.getElementById('proxyUsage').textContent = stats.proxyUsage || 0;
+        document.getElementById('activeProcesses').textContent = stats.activeProcesses;
+
+        // Update monitoring status
+        const statusDiv = document.getElementById('monitoringStatus');
+        const monitoringRes = await fetch(`${API_URL}/monitoring-status`);
+        const monitoringData = await monitoringRes.json();
+        
+        if (monitoringData.active) {
+          statusDiv.className = 'monitoring-status';
+          statusDiv.innerHTML = '<div class="pulse"></div><span>System Monitoring Active - ' + stats.activeProcesses + ' processes tracked</span>';
+        } else {
+          statusDiv.className = 'monitoring-status inactive';
+          statusDiv.innerHTML = '<span>⚠️ System Monitoring Inactive</span>';
+        }
+      } catch (err) {
+        console.error('Error loading stats:', err);
+      }
+    }
+
+    async function addNewLog() {
+      const appName = document.getElementById('newAppName').value;
+      const startTime = document.getElementById('newStartTime').value;
+      const stopTime = document.getElementById('newStopTime').value;
+
+      if (!appName || !startTime || !stopTime) {
+        showToast('Please fill in all fields', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/log-usage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            appName,
+            startTime: new Date(startTime).toISOString(),
+            stopTime: new Date(stopTime).toISOString()
+          })
+        });
+
+        const data = await res.json();
+        
+        if (data.alertSent) {
+          showToast(`✅ Log added! SMS alert sent for: ${appName}`, 'success');
+        } else {
+          showToast('✅ Log added successfully', 'success');
+        }
+        
+        document.getElementById('newAppName').value = '';
+        document.getElementById('newStartTime').value = '';
+        document.getElementById('newStopTime').value = '';
+        
+        loadStats();
+        fetchAllLogs();
+      } catch (err) {
+        console.error('Error adding log:', err);
+        showToast('❌ Failed to add log', 'error');
+      }
+    }
+
+    async function fetchFilteredLogs() {
+      const startInput = document.getElementById("startTime").value;
+      const stopInput = document.getElementById("stopTime").value;
+
+      if (!startInput || !stopInput) {
+        showToast('Please select both start and stop time', 'error');
+        return;
+      }
+
+      const startTime = new Date(startInput).toISOString();
+      const stopTime = new Date(stopInput).toISOString();
+
+      try {
+        const res = await fetch(`${API_URL}/get-logs?startTime=${startTime}&stopTime=${stopTime}`);
+        const data = await res.json();
+        displayLogs(data);
+        showToast(`Found ${data.length} logs`, 'success');
+      } catch (err) {
+        console.error("Error fetching logs:", err);
+        showToast('Failed to fetch logs', 'error');
+      }
+    }
+
+    async function fetchAllLogs() {
+      try {
+        const res = await fetch(`${API_URL}/all-logs`);
+        const data = await res.json();
+        displayLogs(data);
+      } catch (err) {
+        console.error("Error fetching all logs:", err);
+      }
+    }
+
+    async function clearLogs() {
+      if (!confirm('Are you sure you want to clear all logs? This cannot be undone.')) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/clear-logs`, { method: 'DELETE' });
+        const data = await res.json();
+        showToast(data.message, 'success');
+        loadStats();
+        fetchAllLogs();
+      } catch (err) {
+        console.error("Error clearing logs:", err);
+        showToast('Failed to clear logs', 'error');
+      }
+    }
+
+    async function testAlert() {
+      try {
+        const res = await fetch(`${API_URL}/test-alert`, { method: 'POST' });
+        const data = await res.json();
+        showToast('Test SMS sent! Check your phone.', 'success');
+      } catch (err) {
+        console.error("Error sending test alert:", err);
+        showToast('Failed to send test alert', 'error');
+      }
+    }
+
+    function displayLogs(logs) {
+      const tbody = document.getElementById("logTableBody");
+      
+      if (logs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="empty-state">
+              <div>
+                <h3>No logs found</h3>
+                <p>System is monitoring but no activities logged yet</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Sort by most recent first
+      logs.sort((a, b) => new Date(b.loggedAt) - new Date(a.loggedAt));
+
+      tbody.innerHTML = logs.map(log => {
+        const typeClass = getTypeClass(log.type);
+        const anomalyClass = getAnomalyClass(log.anomaly);
+        
+        return `
+          <tr>
+            <td><span class="type-badge ${typeClass}">${formatType(log.type)}</span></td>
+            <td><strong>${log.appName}</strong></td>
+            <td>${new Date(log.loggedAt).toLocaleString()}</td>
+            <td><span class="anomaly-badge ${anomalyClass}">${log.anomaly}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function formatType(type) {
+      if (type === 'BACKGROUND_PROCESS') return 'Process';
+      if (type === 'NETWORK_CONNECTION') return 'Network';
+      if (type === 'MANUAL_ENTRY') return 'Manual';
+      return type;
+    }
+
+    function getTypeClass(type) {
+      if (type === 'BACKGROUND_PROCESS') return 'type-process';
+      if (type === 'NETWORK_CONNECTION') return 'type-network';
+      if (type === 'MANUAL_ENTRY') return 'type-manual';
+      return 'type-process';
+    }
+
+    function getAnomalyClass(anomaly) {
+      if (anomaly === 'None') return 'anomaly-none';
+      if (anomaly.includes('AGE_RESTRICTED') || anomaly.includes('VPN') || anomaly.includes('INCOGNITO')) {
+        return 'anomaly-danger';
+      }
+      return 'anomaly-warning';
+    }
+  </script>
+</body>
+</html>
