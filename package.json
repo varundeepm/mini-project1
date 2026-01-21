@@ -1,0 +1,17 @@
+{
+  "name": "childguard-project",
+  "version": "1.0.0",
+  "description": "Child-friendly safe browsing platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.22.1",
+    "twilio": "^5.11.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
